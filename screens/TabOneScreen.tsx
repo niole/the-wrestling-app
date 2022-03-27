@@ -5,7 +5,7 @@ import Slider from '@react-native-community/slider';
 import EditScreenInfo from '../components/EditScreenInfo';
 import { RootTabScreenProps } from '../types';
 
-type NewLabel = { label: string, ts: number };
+type NewLabel = { durationMillis: number, label: string, ts: number };
 
 type MatchVideo = {
   id: string;
@@ -17,6 +17,7 @@ type MatchVideo = {
 };
 
 type MatchEvent = {
+  id: string;
   timestamp: number;
   label: string;
   durationMillis: number;
@@ -41,8 +42,8 @@ const defaultData = {
       start: new Date('Thu, 03 Mar 2022 19:25:03 GMT').getTime(),
       durationMillis: 7000,
       events: [
-        { timestamp: new Date('Thu, 03 Mar 2022 19:25:04 GMT').getTime(), label: 'one', durationMillis: 1500 },
-        { timestamp: new Date('Thu, 03 Mar 2022 19:25:06 GMT').getTime(), label: 'one half', durationMillis: 1500 }
+        { id: Math.random().toString(), timestamp: new Date('Thu, 03 Mar 2022 19:25:04 GMT').getTime(), label: 'one', durationMillis: 1500 },
+        { id: Math.random().toString(), timestamp: new Date('Thu, 03 Mar 2022 19:25:06 GMT').getTime(), label: 'one half', durationMillis: 1500 }
       ],
     },
     {
@@ -51,7 +52,7 @@ const defaultData = {
       start: new Date('Thu, 03 Mar 2022 19:25:10 GMT').getTime(),
       durationMillis: 27000,
       events: [
-        { timestamp: new Date('Thu, 03 Mar 2022 19:25:10 GMT').getTime(), label: 'two', durationMillis: 1500 },
+        { id: Math.random().toString(), timestamp: new Date('Thu, 03 Mar 2022 19:25:10 GMT').getTime(), label: 'two', durationMillis: 1500 },
       ],
   }
   ],
@@ -64,6 +65,8 @@ type MatchVideoViewProps =  MatchVideo & {
   selected: boolean,
   handlePause: () => void;
   addLabel: (nl: NewLabel) => void;
+  editLabel: (labelId: string, nl: MatchEvent) => void;
+  deleteLabel: (labelId: string) => void;
 };
 
 function MatchVideoView(props: MatchVideoViewProps) {
@@ -77,6 +80,8 @@ const {
   events,
   handlePause,
   addLabel,
+  editLabel,
+  deleteLabel,
   timestampOverride = 0,
 } = props;
   const [newLabel, setNewLabel] = React.useState<string>('');
@@ -103,10 +108,11 @@ const {
   const selectedEvent = events.find((e, i) => {
     const ts = e.timestamp;
     const tsEnd = e.timestamp + e.durationMillis;
+    const isAfterEventStart = timestamp >= ts;
     if (i < events.length-1) {
-      return ts >= timestamp && timestamp < events[i+1].timestamp;
+      return isAfterEventStart && timestamp < events[i+1].timestamp;
     }
-    return ts >= timestamp;
+    return isAfterEventStart;
   });
 
   const handleAddLabel = () => {
@@ -119,14 +125,24 @@ const {
     <View style={styles.container}>
       <View>
         <Text style={styles.title}>{title}</Text>
-        {selectedEvent && <Text style={styles.subTitle}>{selectedEvent.label}</Text>}
+          {selectedEvent && <><Button
+            title={selectedEvent.label}
+            onPress={() => {
+              handlePause();
+              setShowLabelModal(true);
+            }}
+          /><Button title="Delete" onPress={() => deleteLabel(selectedEvent.id)} /></>}
       </View>
       <Modal visible={showLabelModal} onRequestClose={() => setShowLabelModal(false)}>
-        <TextInput style={styles.input} onChangeText={setNewLabel} />
+          <TextInput defaultValue={selectedEvent?.label} style={styles.input} onChangeText={setNewLabel} />
           <Button
             title="Save"
             onPress={() => {
-              addLabel({ label: newLabel, ts: timestamp });
+              if (selectedEvent) {
+                editLabel(selectedEvent.id, { ...selectedEvent, label: newLabel });
+              } else {
+                addLabel({ durationMillis: 3000, label: newLabel, ts: timestamp });
+              }
               setShowLabelModal(false)
               setNewLabel('');
             }}
@@ -225,6 +241,8 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
             key={item.id}
             shouldPlay={isPlaying}
             selected={index === selectedItemIndex}
+            editLabel={editLabel(match, item)(setMatchVideo)}
+            deleteLabel={deleteLabel(match, item)(setMatchVideo)}
             {...item}
           />
         )}
@@ -271,9 +289,29 @@ const addLabelToVideo = (match: Match, video: MatchVideo) => (setMatchVideo: (m:
     events: match.videos[vidId].events.concat({
       timestamp: newLabel.ts,
       label: newLabel.label,
-      durationMillis: 3000
+      durationMillis: newLabel.durationMillis,
+      id: Math.random().toString(),
     })
   }
+  setMatchVideo(match);
+};
+
+const editLabel = (match: Match, video: MatchVideo) => (setMatchVideo: (m: Match) => void) => (labelId: string, newLabel: MatchEvent) => {
+  const vidId = match.videos.findIndex(v => v.id === video.id);
+  const eId = match.videos[vidId].events.findIndex(e => e.id === labelId);
+  const events = match.videos[vidId].events;
+
+  events[eId] = newLabel;
+
+  match.videos[vidId] = { ...video, events };
+  setMatchVideo(match);
+};
+
+const deleteLabel = (match: Match, video: MatchVideo) => (setMatchVideo: (m: Match) => void) => (labelId: string) => {
+  const vidId = match.videos.findIndex(v => v.id === video.id);
+  const events = match.videos[vidId].events.filter(e => e.id !== labelId);
+
+  match.videos[vidId] = { ...video, events };
   setMatchVideo(match);
 };
 
