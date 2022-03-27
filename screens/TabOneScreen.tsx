@@ -1,9 +1,11 @@
 import * as React from 'react';
-import { FlatList, Text, View, StyleSheet, Button } from 'react-native';
+import { Modal, TextInput, FlatList, Text, View, StyleSheet, Button } from 'react-native';
 import { Video, AVPlaybackStatus } from 'expo-av';
 import Slider from '@react-native-community/slider';
 import EditScreenInfo from '../components/EditScreenInfo';
 import { RootTabScreenProps } from '../types';
+
+type NewLabel = { label: string, ts: number };
 
 type MatchVideo = {
   id: string;
@@ -60,6 +62,8 @@ type MatchVideoViewProps =  MatchVideo & {
   shouldPlay: boolean;
   timestampOverride?: number,
   selected: boolean,
+  handlePause: () => void;
+  addLabel: (nl: NewLabel) => void;
 };
 
 function MatchVideoView(props: MatchVideoViewProps) {
@@ -71,12 +75,15 @@ const {
   uri,
   start,
   events,
+  handlePause,
+  addLabel,
   timestampOverride = 0,
 } = props;
-
+  const [newLabel, setNewLabel] = React.useState<string>('');
   const video = React.useRef(null);
   const [status, setStatus] = React.useState({ positionMillis: 0 });
   const [timestamp, setTimestamp] = React.useState<number>(timestampOverride !== undefined && selected ? timestampOverride : status.positionMillis + start)
+  const [showLabelModal, setShowLabelModal] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     setTimestamp(timestampOverride);
@@ -102,6 +109,11 @@ const {
     return ts >= timestamp;
   });
 
+  const handleAddLabel = () => {
+    handlePause();
+    setShowLabelModal(true);
+  };
+
   const videoPositionMillis = !shouldPlay && !selected ? timestamp - start : undefined;
   return (
     <View style={styles.container}>
@@ -109,6 +121,24 @@ const {
         <Text style={styles.title}>{title}</Text>
         {selectedEvent && <Text style={styles.subTitle}>{selectedEvent.label}</Text>}
       </View>
+      <Modal visible={showLabelModal} onRequestClose={() => setShowLabelModal(false)}>
+        <TextInput style={styles.input} onChangeText={setNewLabel} />
+          <Button
+            title="Save"
+            onPress={() => {
+              addLabel({ label: newLabel, ts: timestamp });
+              setShowLabelModal(false)
+              setNewLabel('');
+            }}
+          />
+          <Button
+            title="Cancel"
+            onPress={() => {
+              setShowLabelModal(false)
+              setNewLabel('');
+            }}
+          />
+      </Modal>
       <Video
         positionMillis={videoPositionMillis}
         ref={video}
@@ -128,6 +158,7 @@ const {
 
         }}
       />
+      <Button title="Add Label" onPress={handleAddLabel} />
     </View>
   );
 }
@@ -186,7 +217,17 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
         getItemLayout={(data, index) => ({ length: ITEM_HEIGHTT, offset: ITEM_HEIGHTT * index, index })}
         data={match.videos}
         extraData={`${isPlaying} ${selectedItemIndex} ${timestamp}`}
-        renderItem={({ item, index }) => <MatchVideoView timestampOverride={timestamp} key={item.id} shouldPlay={isPlaying} selected={index === selectedItemIndex} {...item} />}
+        renderItem={({ item, index }) => (
+          <MatchVideoView
+            handlePause={() => setIsPlaying(false)}
+            addLabel={addLabelToVideo(match, item)(setMatchVideo)}
+            timestampOverride={timestamp}
+            key={item.id}
+            shouldPlay={isPlaying}
+            selected={index === selectedItemIndex}
+            {...item}
+          />
+        )}
         keyExtractor={i => i.id}
         />
       <View style={styles.playControls}>
@@ -218,6 +259,19 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   );
 }
 
+const addLabelToVideo = (match: Match, video: MatchVideo) => (setMatchVideo: (m: Match) => void) => (newLabel: NewLabel) => {
+  const vidId = match.videos.findIndex(v => v.id === video.id);
+  match.videos[vidId] = {
+    ...video,
+    events: match.videos[vidId].events.concat({
+      timestamp: newLabel.ts,
+      label: newLabel.label,
+      durationMillis: 3000
+    })
+  }
+  setMatchVideo(match);
+};
+
 const styles = StyleSheet.create({
   playControls: { alignItems: 'center' },
   video: { width: 500, height: 300 },
@@ -236,4 +290,10 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   matchTitle: { fontSize: 22, textAlign: 'center' },
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+  },
 });
