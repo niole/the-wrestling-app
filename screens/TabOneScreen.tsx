@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { FlatList, Text, View, StyleSheet, Button } from 'react-native';
 import { Video, AVPlaybackStatus } from 'expo-av';
+import Slider from '@react-native-community/slider';
 import EditScreenInfo from '../components/EditScreenInfo';
 import { RootTabScreenProps } from '../types';
 
@@ -22,6 +23,8 @@ type Match = {
   videos: MatchVideo[];
   start: number;
 };
+
+const max = (ns: number[]) => ns.reduce((a, n) => a > n ? a : n, Number.NEGATIVE_INFINITY);
 
 const defaultData = {
   videos: [
@@ -102,7 +105,6 @@ const {
         ref={video}
         style={styles.video}
         source={{ uri }}
-        useNativeControls
         resizeMode="contain"
         onPlaybackStatusUpdate={status => {
 
@@ -170,6 +172,15 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
       <Button
         title={isPlaying ? 'Pause' : 'Play'}
         onPress={() => setIsPlaying(!isPlaying)}
+      />
+      <Slider
+        onValueChange={updateTimestamp}
+        value={Math.max(timestamp, match.start)}
+        style={{width: 200, height: 40}}
+        minimumValue={match.start}
+        maximumValue={max(match.videos.map(v => v.start + v.durationMillis))}
+        minimumTrackTintColor="#FFFFFF"
+        maximumTrackTintColor="#000000"
       />
       <Button
         title="reset"
