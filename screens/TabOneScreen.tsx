@@ -21,13 +21,16 @@ type MatchEvent = {
 };
 
 type Match = {
+  title?: string;
   videos: MatchVideo[];
   start: number;
 };
 
 const max = (ns: number[]) => ns.reduce((a, n) => a > n ? a : n, Number.NEGATIVE_INFINITY);
+const formatDate = (d: number) => new Date(d).toISOString();
 
 const defaultData = {
+  title: 'A match',
   videos: [
     {
       title: 'the start of the match',
@@ -174,6 +177,10 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
   return (
     <View style={styles.container}>
+      <View>
+        <Text style={styles.matchTitle}>{match.title}</Text>
+        <Text style={styles.matchTitle}>{formatDate(timestamp)}</Text>
+      </View>
       <FlatList
         ref={flatListRef}
         getItemLayout={(data, index) => ({ length: ITEM_HEIGHTT, offset: ITEM_HEIGHTT * index, index })}
@@ -192,7 +199,6 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
           minimumTrackTintColor="#FFFFFF"
           maximumTrackTintColor="#000000"
         />
-        <Text>{new Date(timestamp).toISOString()}</Text>
         <View style={styles.playButtons}>
           <Button
             title={isPlaying ? 'Pause' : 'Play'}
@@ -223,11 +229,11 @@ const styles = StyleSheet.create({
   title: {
     textAlign: 'left',
     fontSize: 20,
-    fontWeight: 'bold',
   },
   separator: {
     marginVertical: 30,
     height: 1,
     width: '80%',
   },
+  matchTitle: { fontSize: 22, textAlign: 'center' },
 });
