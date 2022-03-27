@@ -85,6 +85,7 @@ const {
   timestampOverride = 0,
 } = props;
   const [newLabel, setNewLabel] = React.useState<string>('');
+  const [newDuration, setNewDuration] = React.useState<number>(0);
   const video = React.useRef(null);
   const [status, setStatus] = React.useState({ positionMillis: 0 });
   const [timestamp, setTimestamp] = React.useState<number>(timestampOverride !== undefined && selected ? timestampOverride : status.positionMillis + start)
@@ -134,17 +135,23 @@ const {
           /><Button title="Delete" onPress={() => deleteLabel(selectedEvent.id)} /></>}
       </View>
       <Modal visible={showLabelModal} onRequestClose={() => setShowLabelModal(false)}>
-          <TextInput defaultValue={selectedEvent?.label} style={styles.input} onChangeText={setNewLabel} />
+          <TextInput placeholder="label" defaultValue={selectedEvent?.label} style={styles.input} onChangeText={setNewLabel} />
+          <TextInput keyboardType="numeric" placeholder="duration" defaultValue={selectedEvent?.label} style={styles.input} onChangeText={n => setNewDuration(parseFloat(n))} />
           <Button
             title="Save"
             onPress={() => {
               if (selectedEvent) {
-                editLabel(selectedEvent.id, { ...selectedEvent, label: newLabel });
+                editLabel(selectedEvent.id, {
+                  ...selectedEvent,
+                  label: newLabel,
+                  durationMillis: newDuration || selectedEvent.durationMillis,
+                });
               } else {
-                addLabel({ durationMillis: 3000, label: newLabel, ts: timestamp });
+                addLabel({ durationMillis: newDuration || 3000, label: newLabel, ts: timestamp });
               }
               setShowLabelModal(false)
               setNewLabel('');
+              setNewDuration(0);
             }}
           />
           <Button
@@ -152,6 +159,7 @@ const {
             onPress={() => {
               setShowLabelModal(false)
               setNewLabel('');
+              setNewDuration(0);
             }}
           />
       </Modal>
@@ -291,7 +299,7 @@ const addLabelToVideo = (match: Match, video: MatchVideo) => (setMatchVideo: (m:
       label: newLabel.label,
       durationMillis: newLabel.durationMillis,
       id: Math.random().toString(),
-    })
+    }).sort((a, b) => a.timestamp - b.timestamp)
   }
   setMatchVideo(match);
 };
