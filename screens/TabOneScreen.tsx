@@ -11,6 +11,7 @@ type MatchVideo = {
   start: number;
   events: MatchEvent[];
   durationMillis: number;
+  title?: string;
 };
 
 type MatchEvent = {
@@ -29,6 +30,7 @@ const max = (ns: number[]) => ns.reduce((a, n) => a > n ? a : n, Number.NEGATIVE
 const defaultData = {
   videos: [
     {
+      title: 'the start of the match',
       id: '1',
       uri: 'http://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4',
       start: new Date('Thu, 03 Mar 2022 19:25:03 GMT').getTime(),
@@ -59,6 +61,7 @@ type MatchVideoViewProps =  MatchVideo & {
 
 function MatchVideoView(props: MatchVideoViewProps) {
 const {
+  title,
   id,
   shouldPlay,
   selected,
@@ -99,7 +102,10 @@ const {
   const videoPositionMillis = !shouldPlay && !selected ? timestamp - start : undefined;
   return (
     <View style={styles.container}>
-      {selectedEvent && <Text>{selectedEvent.label}</Text>}
+      <View>
+        <Text style={styles.title}>{title}</Text>
+        {selectedEvent && <Text style={styles.subTitle}>{selectedEvent.label}</Text>}
+      </View>
       <Video
         positionMillis={videoPositionMillis}
         ref={video}
@@ -124,7 +130,7 @@ const {
 }
 
 const INTERVAL = 500;
-const ITEM_HEIGHTT = 1000;
+const ITEM_HEIGHTT = 700;
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
   const flatListRef = React.useRef(null);
   const timer = React.useRef<NodeJS.Timer | null | undefined>();
@@ -168,28 +174,6 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
   return (
     <View style={styles.container}>
-      <Text>{new Date(timestamp).toISOString()}</Text>
-      <Button
-        title={isPlaying ? 'Pause' : 'Play'}
-        onPress={() => setIsPlaying(!isPlaying)}
-      />
-      <Slider
-        onValueChange={updateTimestamp}
-        value={Math.max(timestamp, match.start)}
-        style={{width: 200, height: 40}}
-        minimumValue={match.start}
-        maximumValue={max(match.videos.map(v => v.start + v.durationMillis))}
-        minimumTrackTintColor="#FFFFFF"
-        maximumTrackTintColor="#000000"
-      />
-      <Button
-        title="reset"
-        disabled={isPlaying}
-        onPress={() => {
-          setIsPlaying(false);
-          updateTimestamp(match.start);
-        }}
-      />
       <FlatList
         ref={flatListRef}
         getItemLayout={(data, index) => ({ length: ITEM_HEIGHTT, offset: ITEM_HEIGHTT * index, index })}
@@ -197,20 +181,47 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
         extraData={`${isPlaying} ${selectedItemIndex} ${timestamp}`}
         renderItem={({ item, index }) => <MatchVideoView timestampOverride={timestamp} key={item.id} shouldPlay={isPlaying} selected={index === selectedItemIndex} {...item} />}
         keyExtractor={i => i.id}
-      />
+        />
+      <View style={styles.playControls}>
+        <Slider
+          onValueChange={updateTimestamp}
+          value={Math.max(timestamp, match.start)}
+          style={{width: 200, height: 40}}
+          minimumValue={match.start}
+          maximumValue={max(match.videos.map(v => v.start + v.durationMillis))}
+          minimumTrackTintColor="#FFFFFF"
+          maximumTrackTintColor="#000000"
+        />
+        <Text>{new Date(timestamp).toISOString()}</Text>
+        <View style={styles.playButtons}>
+          <Button
+            title={isPlaying ? 'Pause' : 'Play'}
+            onPress={() => setIsPlaying(!isPlaying)}
+          />
+          <Button
+            title="reset"
+            disabled={isPlaying}
+            onPress={() => {
+              setIsPlaying(false);
+              updateTimestamp(match.start);
+            }}
+          />
+        </View>
+      </View>
   </View>
   );
 }
 
 const styles = StyleSheet.create({
-  video: { width: 500, height: 500 },
-  buttons: {},
+  playControls: { alignItems: 'center' },
+  video: { width: 500, height: 300 },
+  playButtons: { flexDirection: 'row' },
+  subTitle: { fontSize: 16 },
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   title: {
+    textAlign: 'left',
     fontSize: 20,
     fontWeight: 'bold',
   },
