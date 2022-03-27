@@ -232,7 +232,12 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
         />
       <View style={styles.playControls}>
         <Slider
-          onValueChange={updateTimestamp}
+          onValueChange={ts => {
+            if (isPlaying) {
+              setIsPlaying(false);
+            }
+            updateTimestamp(ts);
+          }}
           value={Math.max(timestamp, match.start)}
           style={{width: 200, height: 40}}
           minimumValue={match.start}
