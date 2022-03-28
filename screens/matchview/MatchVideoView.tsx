@@ -81,8 +81,19 @@ const {
           /><Button title="Delete" onPress={() => deleteLabel(selectedEvent.id)} /></>}
       </View>
       <Modal visible={showLabelModal} onRequestClose={() => setShowLabelModal(false)}>
-          <TextInput placeholder="label" defaultValue={selectedEvent?.label} style={styles.input} onChangeText={setNewLabel} />
-          <TextInput keyboardType="numeric" placeholder="duration" defaultValue={selectedEvent?.label} style={styles.input} onChangeText={n => setNewDuration(parseFloat(n))} />
+          <TextInput
+            placeholder="label"
+            defaultValue={selectedEvent?.label}
+            style={styles.input}
+            onChangeText={setNewLabel}
+          />
+          <TextInput
+            keyboardType="numeric"
+            placeholder="duration (seconds)"
+            defaultValue={selectedEvent ? (selectedEvent.durationMillis / 1000).toString() : undefined}
+            style={styles.input}
+            onChangeText={n => setNewDuration(parseFloat(n))}
+          />
           <Button
             title="Save"
             onPress={() => {
