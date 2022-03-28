@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown';
 
 import { RootTabScreenProps } from '../types';
@@ -37,11 +37,17 @@ const defaultData = {
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
   const [matches, setMatches] = React.useState<Match[]>([defaultData])
   const [selectedMatch, setSelectedMatch] = React.useState<Match | undefined>();
+  const [creatingNewMatch, setCreateNewMatch] = React.useState<boolean>(false);
+
   if (selectedMatch) {
     return <MatchView goBack={() => setSelectedMatch(undefined)} {...selectedMatch} />;
   }
+
   return (
     <View style={styles.container}>
+        <Pressable onPress={() => setCreateNewMatch(true)}>
+          <Text style={styles.dropdownButtonStyle}>Create New Match</Text>
+        </Pressable>
         <SelectDropdown
           defaultButtonText="View/Edit a Match"
           buttonStyle={styles.dropdownButtonStyle}
@@ -56,5 +62,12 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
 const styles = StyleSheet.create({
   container: { alignItems: 'center' },
-  dropdownButtonStyle: { borderWidth: 1, borderColor: 'cadetblue', borderRadius: 3, backgroundColor: 'aquamarine' },
+  dropdownButtonStyle: {
+    borderWidth: 1,
+    borderColor: 'cadetblue',
+    borderRadius: 3,
+    backgroundColor: 'aquamarine',
+    padding: 10,
+    fontSize: 18
+  },
 });
