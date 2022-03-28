@@ -3,6 +3,7 @@ import { Modal, TextInput, FlatList, Text, View, StyleSheet, Button } from 'reac
 import Slider from '@react-native-community/slider';
 import { NewLabel, MatchVideoView } from './MatchVideoView';
 import { MatchEvent, Match, MatchVideo } from '../types';
+import { ClickableText } from '../../components';
 
 const INTERVAL = 500;
 const ITEM_HEIGHTT = 700;
@@ -10,9 +11,9 @@ const ITEM_HEIGHTT = 700;
 const max = (ns: number[]) => ns.reduce((a, n) => a > n ? a : n, Number.NEGATIVE_INFINITY);
 const formatDate = (d: number) => new Date(d).toISOString();
 
-type Props = Match;
+type Props = Match & { goBack: () => void };
 
-export function MatchView(defaultData: Props) {
+export function MatchView({ goBack, ...defaultData }: Props) {
   const flatListRef = React.useRef(null);
   const timer = React.useRef<NodeJS.Timer | null | undefined>();
   const [match, setMatchVideo] = React.useState<Match>({...defaultData, videos: defaultData.videos.sort((a, b) => a.start - b.start) });
@@ -55,6 +56,9 @@ export function MatchView(defaultData: Props) {
 
   return (
     <View style={styles.container}>
+      <ClickableText onPress={goBack}>
+        Back
+      </ClickableText>
       <View>
         <Text style={styles.matchTitle}>{match.title}</Text>
         <Text style={styles.matchTitle}>{formatDate(timestamp)}</Text>

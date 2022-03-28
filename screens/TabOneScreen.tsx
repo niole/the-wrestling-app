@@ -1,8 +1,13 @@
 import * as React from 'react';
+import { Text, View } from 'react-native';
+import SelectDropdown from 'react-native-select-dropdown';
+
 import { RootTabScreenProps } from '../types';
 import { MatchView } from './matchview/MatchView';
+import { Match } from './types';
 
 const defaultData = {
+  id: Math.random().toString(),
   title: 'A match',
   videos: [
     {
@@ -30,5 +35,20 @@ const defaultData = {
 };
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
-  return <MatchView {...defaultData} />;
+  const [matches, setMatches] = React.useState<Match[]>([defaultData])
+  const [selectedMatch, setSelectedMatch] = React.useState<Match | undefined>();
+  if (selectedMatch) {
+    return <MatchView goBack={() => setSelectedMatch(undefined)} {...selectedMatch} />;
+  }
+  return (
+    <View>
+      <Text>Select a match</Text>
+        <SelectDropdown
+          data={matches}
+          rowTextForSelection={item => item.title}
+          onSelect={setSelectedMatch}
+          buttonTextAfterSelection={item => item.title}
+        />
+    </View>
+  );
 }

@@ -15,7 +15,8 @@ export type MatchEvent = {
 };
 
 export type Match = {
-  title?: string;
+  id: string;
+  title: string;
   videos: MatchVideo[];
   start: number;
 };
