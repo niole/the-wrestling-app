@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown';
 
 import { RootTabScreenProps } from '../types';
@@ -41,9 +41,10 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     return <MatchView goBack={() => setSelectedMatch(undefined)} {...selectedMatch} />;
   }
   return (
-    <View>
-      <Text>Select a match</Text>
+    <View style={styles.container}>
         <SelectDropdown
+          defaultButtonText="View/Edit a Match"
+          buttonStyle={styles.dropdownButtonStyle}
           data={matches}
           rowTextForSelection={item => item.title}
           onSelect={setSelectedMatch}
@@ -52,3 +53,8 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { alignItems: 'center' },
+  dropdownButtonStyle: { borderWidth: 1, borderColor: 'cadetblue', borderRadius: 3, backgroundColor: 'aquamarine' },
+});
