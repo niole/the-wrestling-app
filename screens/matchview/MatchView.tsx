@@ -83,36 +83,36 @@ export function MatchView({ goBack, ...defaultData }: Props) {
         )}
         keyExtractor={i => i.id}
         />
-      <View style={styles.playControls}>
-        <Slider
-          onValueChange={ts => {
-            if (isPlaying) {
-              setIsPlaying(false);
-            }
-            updateTimestamp(ts);
-          }}
-          value={Math.max(timestamp, match.start)}
-          style={{width: 200, height: 40}}
-          minimumValue={match.start}
-          maximumValue={max(match.videos.map(v => v.start + v.durationMillis))}
-          minimumTrackTintColor="#FFFFFF"
-          maximumTrackTintColor="#000000"
-        />
-        <View style={styles.playButtons}>
-          <Button
-            title={isPlaying ? 'Pause' : 'Play'}
-            onPress={() => setIsPlaying(!isPlaying)}
-          />
-          <Button
-            title="reset"
-            disabled={isPlaying}
-            onPress={() => {
-              setIsPlaying(false);
-              updateTimestamp(match.start);
+        {match.videos.length > 0 && <View style={styles.playControls}>
+          <Slider
+            onValueChange={ts => {
+              if (isPlaying) {
+                setIsPlaying(false);
+              }
+              updateTimestamp(ts);
             }}
+            value={Math.max(timestamp, match.start)}
+            style={{width: 200, height: 40}}
+            minimumValue={match.start}
+            maximumValue={max(match.videos.map(v => v.start + v.durationMillis))}
+            minimumTrackTintColor="#FFFFFF"
+            maximumTrackTintColor="#000000"
           />
-        </View>
-      </View>
+          <View style={styles.playButtons}>
+            <Button
+              title={isPlaying ? 'Pause' : 'Play'}
+              onPress={() => setIsPlaying(!isPlaying)}
+            />
+            <Button
+              title="reset"
+              disabled={isPlaying}
+              onPress={() => {
+                setIsPlaying(false);
+                updateTimestamp(match.start);
+              }}
+            />
+          </View>
+        </View>}
   </View>
   );
 }

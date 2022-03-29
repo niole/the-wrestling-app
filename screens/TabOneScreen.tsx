@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { TextInput, Modal, Button, Pressable, StyleSheet, Text, View } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import SelectDropdown from 'react-native-select-dropdown';
 
 import { RootTabScreenProps } from '../types';
@@ -38,16 +39,91 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   const [matches, setMatches] = React.useState<Match[]>([defaultData])
   const [selectedMatch, setSelectedMatch] = React.useState<Match | undefined>();
   const [creatingNewMatch, setCreateNewMatch] = React.useState<boolean>(false);
+  const [showTimePicker, setShowTimePicker] = React.useState<boolean>(false);
+  const [showDatePicker, setShowDatePicker] = React.useState<boolean>(false);
+  const [newMatchTitle, setNewMatchTitle] = React.useState<string | undefined>();
+  const [newMatchStartTime, setNewMatchStartTime] = React.useState<Date>(new Date());
 
   if (selectedMatch) {
     return <MatchView goBack={() => setSelectedMatch(undefined)} {...selectedMatch} />;
   }
+
+  const resetModalState = () => {
+    setCreateNewMatch(false);
+    setNewMatchTitle(undefined);
+    setNewMatchStartTime(new Date());
+    setShowTimePicker(false);
+    setShowDatePicker(false);
+  };
 
   return (
     <View style={styles.container}>
         <Pressable onPress={() => setCreateNewMatch(true)}>
           <Text style={styles.dropdownButtonStyle}>Create New Match</Text>
         </Pressable>
+        <Modal visible={creatingNewMatch} onRequestClose={() => setCreateNewMatch(false)}>
+            <TextInput
+              placeholder="match title"
+              style={styles.input}
+              onChangeText={setNewMatchTitle}
+            />
+            {showDatePicker && (
+              <DateTimePicker
+                testID="datePicker"
+                value={newMatchStartTime}
+                mode="date"
+                is24Hour={true}
+                onChange={(e: any, d?: Date) => {
+                  setNewMatchStartTime(d || newMatchStartTime);
+                  setShowDatePicker(false);
+                }}
+              />
+            )}
+            {showTimePicker && (
+              <DateTimePicker
+                testID="timePicker"
+                value={newMatchStartTime}
+                mode="time"
+                is24Hour={true}
+                onChange={(e: any, d?: Date) => {
+                  setNewMatchStartTime(d || newMatchStartTime);
+                  setShowTimePicker(false);
+                }}
+              />
+            )}
+            <Text>{`Date: ${newMatchStartTime ? newMatchStartTime.toISOString() : ''}`}</Text>
+            <Button
+              title="Date"
+              onPress={() => {
+                setShowDatePicker(true);
+              }}
+            />
+            <Button
+              title="Time"
+              onPress={() => {
+                setShowTimePicker(true);
+              }}
+            />
+            <Button
+              title="Save"
+              disabled={!newMatchTitle}
+              onPress={() => {
+                setMatches([{
+                  id: Math.random().toString(),
+                  title: newMatchTitle!,
+                  videos: [],
+                  start: newMatchStartTime.getTime(),
+                }, ...matches])
+                resetModalState();
+              }}
+            />
+            <Button
+              title="Cancel"
+              onPress={() => {
+                resetModalState();
+              }}
+            />
+        </Modal>
         <SelectDropdown
           defaultButtonText="View/Edit a Match"
           buttonStyle={styles.dropdownButtonStyle}
@@ -69,5 +145,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'aquamarine',
     padding: 10,
     fontSize: 18
+  },
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
   },
 });
