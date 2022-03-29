@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Modal, TextInput, FlatList, Text, View, StyleSheet, Button } from 'react-native';
+import { FlatList, Text, View, StyleSheet, Button } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { NewLabel, MatchVideoView } from './MatchVideoView';
 import { MatchEvent, Match, MatchVideo } from '../types';
