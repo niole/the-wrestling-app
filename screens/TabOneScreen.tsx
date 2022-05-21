@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { TextInput, Modal, Button, Pressable, StyleSheet, Text, View } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { DateTimePicker } from '../components/DateTimePicker';
 import SelectDropdown from 'react-native-select-dropdown';
 
 import { RootTabScreenProps } from '../types';
@@ -14,7 +14,8 @@ const defaultData = {
     {
       title: 'the start of the match',
       id: '1',
-      uri: 'http://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4',
+      //      uri: 'http://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4',
+      uri: 'file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540niole%252Fthe-wrestling-app/ImagePicker/d1359026-d69e-4b64-888a-075c43eef45a.mp4',
       start: new Date('Thu, 03 Mar 2022 19:25:03 GMT').getTime(),
       durationMillis: 7000,
       events: [
@@ -67,43 +68,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
               style={styles.input}
               onChangeText={setNewMatchTitle}
             />
-            {showDatePicker && (
-              <DateTimePicker
-                testID="datePicker"
-                value={newMatchStartTime}
-                mode="date"
-                is24Hour={true}
-                onChange={(e: any, d?: Date) => {
-                  setNewMatchStartTime(d || newMatchStartTime);
-                  setShowDatePicker(false);
-                }}
-              />
-            )}
-            {showTimePicker && (
-              <DateTimePicker
-                testID="timePicker"
-                value={newMatchStartTime}
-                mode="time"
-                is24Hour={true}
-                onChange={(e: any, d?: Date) => {
-                  setNewMatchStartTime(d || newMatchStartTime);
-                  setShowTimePicker(false);
-                }}
-              />
-            )}
-            <Text>{`Date: ${newMatchStartTime ? newMatchStartTime.toISOString() : ''}`}</Text>
-            <Button
-              title="Date"
-              onPress={() => {
-                setShowDatePicker(true);
-              }}
-            />
-            <Button
-              title="Time"
-              onPress={() => {
-                setShowTimePicker(true);
-              }}
-            />
+            <DateTimePicker onChange={setNewMatchStartTime} />
             <Button
               title="Save"
               disabled={!newMatchTitle}

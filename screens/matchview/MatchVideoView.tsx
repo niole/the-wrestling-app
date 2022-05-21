@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Modal, TextInput, Text, View, StyleSheet, Button } from 'react-native';
+import { formatDate } from '../../utils';
 import { Video, AVPlaybackStatus } from 'expo-av';
 import { MatchVideo, MatchEvent } from '../types';
 
@@ -71,15 +72,18 @@ const {
   return (
     <View style={styles.container}>
       <View>
-        <Text style={styles.title}>{title}</Text>
-          {selectedEvent && <><Button
-            title={selectedEvent.label}
-            onPress={() => {
-              handlePause();
-              setShowLabelModal(true);
-            }}
-          /><Button title="Delete" onPress={() => deleteLabel(selectedEvent.id)} /></>}
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>{title || '(untitled)'}</Text>
+          <Text style={styles.title}>{formatDate(start, false)}</Text>
+        </View>
+        <View style={styles.labelContainer}>
+        <Button
+          title={selectedEvent ? selectedEvent.label : '(no label)'}
+          onPress={handleAddLabel}
+        />
+        <Button title="Delete Label" disabled={!selectedEvent} onPress={() => deleteLabel(selectedEvent.id)} />
       </View>
+    </View>
       <Modal visible={showLabelModal} onRequestClose={() => setShowLabelModal(false)}>
           <TextInput
             placeholder="label"
@@ -139,15 +143,19 @@ const {
 
         }}
       />
-      <Button title="Add Label" onPress={handleAddLabel} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  video: { width: 500, height: 300 },
+  labelContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  video: { width: 500, height: 350 },
   container: {
     flex: 1,
+    marginBottom: 50,
   },
   title: {
     textAlign: 'left',
@@ -159,4 +167,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 10,
   },
+  titleContainer: {
+    marginBottom: 10
+  }
 });

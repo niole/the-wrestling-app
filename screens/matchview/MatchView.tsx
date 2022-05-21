@@ -1,16 +1,14 @@
 import * as React from 'react';
 import { FlatList, Text, View, StyleSheet, Button } from 'react-native';
 import Slider from '@react-native-community/slider';
+import { max, formatDate } from '../../utils';
 import { NewLabel, MatchVideoView } from './MatchVideoView';
 import { MatchEvent, Match, MatchVideo } from '../types';
 import { ClickableText } from '../../components';
-import { UploadVideoView } from './UploadVideoView';
+import { ImportVideoView } from './ImportVideoView';
 
 const INTERVAL = 500;
 const ITEM_HEIGHTT = 700;
-
-const max = (ns: number[]) => ns.reduce((a, n) => a > n ? a : n, Number.NEGATIVE_INFINITY);
-const formatDate = (d: number) => new Date(d).toISOString();
 
 type Props = Match & { goBack: () => void };
 
@@ -21,7 +19,7 @@ export function MatchView({ goBack, ...defaultData }: Props) {
   const [isPlaying, setIsPlaying] = React.useState<boolean>(false);
   const [timestamp, updateTimestamp] = React.useState<number>(match.start);
   const [selectedItemIndex, setSelectedItemIndex] = React.useState<number>(0);
-  const [showUploadView, setShowUploadView] = React.useState<boolean>(false);
+  const [showImportView, setShowImportView] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     return () => {
@@ -56,16 +54,24 @@ export function MatchView({ goBack, ...defaultData }: Props) {
     setSelectedItemIndex(selectedItemIndex);
   }, [timestamp]);
 
-  if (showUploadView) {
-    return <UploadVideoView goBack={() => setShowUploadView(false)}/>;
+  if (showImportView) {
+    return (
+      <ImportVideoView
+        doSelect={video => {
+          addMatchVideo(match, setMatchVideo)(video);
+          setShowImportView(false);
+        }}
+        goBack={() => setShowImportView(false)}
+      />
+    );
   }
 
   return (
     <View style={styles.container}>
-      <ClickableText onPress={goBack}>
-        Back
-      </ClickableText>
-      <View>
+      <View style={styles.matchTitleContainer}>
+        <ClickableText onPress={goBack}>
+          Back
+        </ClickableText>
         <Text style={styles.matchTitle}>{match.title}</Text>
         <Text style={styles.matchTitle}>{formatDate(timestamp)}</Text>
       </View>
@@ -90,7 +96,7 @@ export function MatchView({ goBack, ...defaultData }: Props) {
         keyExtractor={i => i.id}
         />
         <View style={styles.playControls}>
-          <Button title="Upload Videos" onPress ={() => setShowUploadView(true)} />
+          <Button title="Import Videos" onPress ={() => setShowImportView(true)} />
           {match.videos.length > 0 &&<><Slider
             onValueChange={ts => {
               if (isPlaying) {
@@ -157,8 +163,13 @@ const deleteLabel = (match: Match, video: MatchVideo) => (setMatchVideo: (m: Mat
   setMatchVideo(match);
 };
 
+const addMatchVideo = (match: Match, setMatchVideo: (m: Match) => void) => (video: MatchVideo) => {
+  match.videos.push(video);
+  setMatchVideo(match);
+};
+
 const styles = StyleSheet.create({
-  playControls: { alignItems: 'center' },
+  playControls: { backgroundColor: 'grey', alignItems: 'center' },
   video: { width: 500, height: 300 },
   playButtons: { flexDirection: 'row' },
   subTitle: { fontSize: 16 },
@@ -181,4 +192,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 10,
   },
+  matchTitleContainer: {
+    backgroundColor: 'grey',
+    marginBottom: 30
+  }
 });
