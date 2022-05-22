@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { StyleSheet, Button, Text, View } from 'react-native';
 import CommDateTimePicker from '@react-native-community/datetimepicker';
+import { formatDateOnly, formatTime } from '../utils';
 
 export type Props = {
   defaultDate?: Date;
@@ -38,17 +39,16 @@ export function DateTimePicker({ onChange, defaultDate }: Props) {
           }}
         />
       )}
-      <Text>{`Date: ${date.toISOString()}`}</Text>
       <View style={styles.container}>
         <Button
-          title="Date"
+          title={formatDateOnly(date.getTime())}
           style={styles.dateButton}
           onPress={() => {
             setShowDatePicker(true);
           }}
         />
         <Button
-          title="Time"
+          title={formatTime(date.getTime())}
           style={styles.dateButton}
           onPress={() => {
             setShowTimePicker(true);

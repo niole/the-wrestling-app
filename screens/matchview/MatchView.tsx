@@ -90,6 +90,7 @@ export function MatchView({ goBack, ...defaultData }: Props) {
             selected={index === selectedItemIndex}
             editLabel={editLabel(match, item)(setMatchVideo)}
             deleteLabel={deleteLabel(match, item)(setMatchVideo)}
+            updateStartTime={updateVideoStartTime(match, item, setMatchVideo)}
             {...item}
           />
         )}
@@ -165,6 +166,15 @@ const deleteLabel = (match: Match, video: MatchVideo) => (setMatchVideo: (m: Mat
 
 const addMatchVideo = (match: Match, setMatchVideo: (m: Match) => void) => (video: MatchVideo) => {
   match.videos.push(video);
+  setMatchVideo(match);
+};
+
+const updateVideoStartTime = (match: Match, oldVideo: MatchVideo, setMatchVideo: (m: Match) => void) => (newStart: number) => {
+  const updateIndex = match.videos.findIndex(v => v.id === oldVideo.id);
+  match.videos[updateIndex] = {
+    ...oldVideo,
+    start: newStart,
+  };
   setMatchVideo(match);
 };
 

@@ -3,6 +3,7 @@ import { Modal, TextInput, Text, View, StyleSheet, Button } from 'react-native';
 import { formatDate } from '../../utils';
 import { Video, AVPlaybackStatus } from 'expo-av';
 import { MatchVideo, MatchEvent } from '../types';
+import { DateTimePicker } from '../../components/DateTimePicker';
 
 export type NewLabel = { durationMillis: number, label: string, ts: number };
 
@@ -14,6 +15,8 @@ type MatchVideoViewProps =  MatchVideo & {
   addLabel: (nl: NewLabel) => void;
   editLabel: (labelId: string, nl: MatchEvent) => void;
   deleteLabel: (labelId: string) => void;
+  updateStartTime: (t: number) => void;
+  onChange: (v: MatchVideo) => void;
 };
 
 export function MatchVideoView(props: MatchVideoViewProps) {
@@ -29,10 +32,12 @@ const {
   addLabel,
   editLabel,
   deleteLabel,
+  updateStartTime,
+  durationMillis,
   timestampOverride = 0,
 } = props;
   const [newLabel, setNewLabel] = React.useState<string>('');
-  const [newDuration, setNewDuration] = React.useState<number>(0);
+  const [newDuration, setNewDuration] = React.useState<number>(durationMillis);
   const video = React.useRef(null);
   const [status, setStatus] = React.useState({ positionMillis: 0 });
   const [timestamp, setTimestamp] = React.useState<number>(timestampOverride !== undefined && selected ? timestampOverride : status.positionMillis + start)
@@ -74,7 +79,10 @@ const {
       <View>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>{title || '(untitled)'}</Text>
-          <Text style={styles.title}>{formatDate(start, false)}</Text>
+          <DateTimePicker
+            defaultDate={new Date(start)}
+            onChange={newStart => updateStartTime(newStart.getTime())}
+          />
         </View>
         <View style={styles.labelContainer}>
         <Button
