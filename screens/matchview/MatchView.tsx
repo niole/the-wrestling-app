@@ -194,6 +194,6 @@ const styles = StyleSheet.create({
   },
   matchTitleContainer: {
     backgroundColor: 'grey',
-    marginBottom: 30
+    paddingBottom: 10
   }
 });
