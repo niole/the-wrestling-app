@@ -32,5 +32,8 @@ export const formatDateOnly = (d: number): string => {
 };
 
 export const getMatchDurationMillis = (match: Match): number => {
-  return match.videos.map(v => v.start + v.durationMillis).reduce(R.max, Number.NEGATIVE_INFINITY) - match.start;
+  if (match.videos.length) {
+    return match.videos.map(v => v.start + v.durationMillis).reduce(R.max, Number.NEGATIVE_INFINITY) - match.start;
+  }
+  return 0;
 };
