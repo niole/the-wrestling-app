@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as R from 'ramda';
 import { FlatList, Text, View, StyleSheet, Button } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { max, formatDate } from '../../utils';
+import { getMatchDurationMillis, max, formatDate } from '../../utils';
 import { NewLabel, MatchVideoView } from './MatchVideoView';
 import { MatchEvent, Match, MatchVideo } from '../types';
 import { ClickableText } from '../../components';
@@ -74,6 +74,9 @@ export function MatchView({ goBack, ...defaultData }: Props) {
           Back
         </ClickableText>
         <Text style={styles.matchTitle}>{match.title}</Text>
+        <Text style={styles.matchTitle}>{formatDate(match.start)}</Text>
+        <Text style={styles.matchTitle}>-</Text>
+        <Text style={styles.matchTitle}>{formatDate(match.start + getMatchDurationMillis(match))}</Text>
         <Text style={styles.matchTitle}>{formatDate(timestamp)}</Text>
       </View>
       <FlatList

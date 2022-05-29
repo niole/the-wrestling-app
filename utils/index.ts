@@ -1,3 +1,6 @@
+import * as R from 'ramda';
+import { Match } from '../screens/types';
+
 export const max = (ns: number[]) => ns.reduce((a, n) => a > n ? a : n, Number.NEGATIVE_INFINITY);
 export const formatDate = (d: number, dateOnly: boolean = false, timeOnly: boolean = false) => {
   const dateString = formatDateOnly(d);
@@ -26,4 +29,8 @@ export const formatDateOnly = (d: number): string => {
   const day = date.getDate();
   const year = date.getFullYear();
   return `${month}/${day}/${year}`;
+};
+
+export const getMatchDurationMillis = (match: Match): number => {
+  return match.videos.map(v => v.start + v.durationMillis).reduce(R.max, Number.NEGATIVE_INFINITY) - match.start;
 };
