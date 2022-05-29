@@ -11,9 +11,12 @@ import { ImportVideoView } from './ImportVideoView';
 const INTERVAL = 500;
 const ITEM_HEIGHTT = 700;
 
-type Props = Match & { goBack: () => void };
+type Props = Match & {
+  onDelete: () => void,
+  goBack: () => void
+};
 
-export function MatchView({ goBack, ...defaultData }: Props) {
+export function MatchView({ onDelete, goBack, ...defaultData }: Props) {
   const flatListRef = React.useRef(null);
   const timer = React.useRef<NodeJS.Timer | null | undefined>();
   const [match, setMatchVideo] = React.useState<Match>({...defaultData, videos: defaultData.videos.sort((a, b) => a.start - b.start) });
@@ -73,6 +76,7 @@ export function MatchView({ goBack, ...defaultData }: Props) {
         <ClickableText onPress={goBack}>
           Back
         </ClickableText>
+        <Button title="Delete Match" onPress={R.pipe(onDelete, goBack)} />
         <Text style={styles.matchTitle}>{match.title}</Text>
         <Text style={styles.matchTitle}>{formatDate(match.start)}</Text>
         <Text style={styles.matchTitle}>-</Text>
