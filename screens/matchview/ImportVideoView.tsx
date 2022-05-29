@@ -21,7 +21,7 @@ export function ImportVideoView({ doSelect, goBack }: Props) {
       const foundDateTime = result.exif?.DateTime;
       const durationMillis = result.duration || 0;
       const title = '';
-      const start = 0;
+      const start = new Date().getTime(); // TODO need a reasonable fallback
 
       doSelect({
         id: Math.random().toString(),
