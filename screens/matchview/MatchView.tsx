@@ -54,9 +54,10 @@ export function MatchView({ onDelete, goBack, ...defaultData }: Props) {
   }, [selectedItemIndex]);
 
   React.useEffect(() => {
+    console.log(timestamp, match.videos);
     const selectedItemIndex = match.videos.findIndex(v => timestamp >= v.start && timestamp <= v.start + v.durationMillis) || 0;
     setSelectedItemIndex(selectedItemIndex);
-  }, [timestamp]);
+  }, [timestamp, match]);
 
   if (showImportView) {
     return (
@@ -69,7 +70,6 @@ export function MatchView({ onDelete, goBack, ...defaultData }: Props) {
       />
     );
   }
-
   return (
     <View style={styles.container}>
       <View style={styles.matchTitleContainer}>
