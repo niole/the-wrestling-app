@@ -15,6 +15,7 @@ type MatchVideoViewProps =  MatchVideo & {
   addLabel: (nl: NewLabel) => void;
   editLabel: (labelId: string, nl: MatchEvent) => void;
   deleteLabel: (labelId: string) => void;
+  deleteVideo: (videoId: string) => void;
   updateStartTime: (t: number) => void;
   onChange: (v: MatchVideo) => void;
 };
@@ -34,6 +35,7 @@ const {
   deleteLabel,
   updateStartTime,
   durationMillis,
+  deleteVideo,
   timestampOverride = 0,
 } = props;
   const [newLabel, setNewLabel] = React.useState<string>('');
@@ -79,9 +81,10 @@ const {
       <View>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>{title || '(untitled)'}</Text>
+          <Button title="Delete Video" onPress={() => deleteVideo(id)} />
           <DateTimePicker
             defaultDate={new Date(start)}
-            onChange={newStart => updateStartTime(newStart.getTime())}
+            onChange={(newStart: Date) => updateStartTime(newStart.getTime())}
           />
         </View>
         <View style={styles.labelContainer}>

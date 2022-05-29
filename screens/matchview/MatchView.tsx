@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as R from 'ramda';
 import { FlatList, Text, View, StyleSheet, Button } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { max, formatDate } from '../../utils';
@@ -58,7 +59,7 @@ export function MatchView({ goBack, ...defaultData }: Props) {
     return (
       <ImportVideoView
         doSelect={video => {
-          addMatchVideo(match, setMatchVideo)(video);
+          R.pipe(addMatchVideo(match), setMatchVideo)(video);
           setShowImportView(false);
         }}
         goBack={() => setShowImportView(false)}
@@ -83,21 +84,22 @@ export function MatchView({ goBack, ...defaultData }: Props) {
         renderItem={({ item, index }) => (
           <MatchVideoView
             handlePause={() => setIsPlaying(false)}
-            addLabel={addLabelToVideo(match, item)(setMatchVideo)}
+            addLabel={R.pipe(addLabelToVideo(match, item), setMatchVideo)}
             timestampOverride={timestamp}
             key={item.id}
             shouldPlay={isPlaying}
             selected={index === selectedItemIndex}
-            editLabel={editLabel(match, item)(setMatchVideo)}
-            deleteLabel={deleteLabel(match, item)(setMatchVideo)}
-            updateStartTime={updateVideoStartTime(match, item, setMatchVideo)}
+            editLabel={R.pipe(editLabel(match, item), setMatchVideo)}
+            deleteLabel={R.pipe(deleteLabel(match, item), setMatchVideo)}
+            updateStartTime={R.pipe(updateVideoStartTime(match, item), setMatchVideo)}
+            deleteVideo={R.pipe(deleteVideo(match), setMatchVideo)}
             {...item}
           />
         )}
         keyExtractor={i => i.id}
         />
         <View style={styles.playControls}>
-          <Button title="Import Videos" onPress ={() => setShowImportView(true)} />
+          <Button title="Import Video" onPress ={() => setShowImportView(true)} />
           {match.videos.length > 0 &&<><Slider
             onValueChange={ts => {
               if (isPlaying) {
@@ -131,51 +133,66 @@ export function MatchView({ goBack, ...defaultData }: Props) {
   );
 }
 
-const addLabelToVideo = (match: Match, video: MatchVideo) => (setMatchVideo: (m: Match) => void) => (newLabel: NewLabel) => {
-  const vidId = match.videos.findIndex(v => v.id === video.id);
-  match.videos[vidId] = {
-    ...video,
-    events: match.videos[vidId].events.concat({
-      timestamp: newLabel.ts,
-      label: newLabel.label,
-      durationMillis: newLabel.durationMillis,
-      id: Math.random().toString(),
-    }).sort((a, b) => a.timestamp - b.timestamp)
-  }
-  setMatchVideo(match);
+const addLabelToVideo = (match: Match, video: MatchVideo) => (newLabel: NewLabel) => {
+  return updateVideo(match, video, v => {
+    return {
+      ...v,
+      events: v.events.concat({
+        timestamp: newLabel.ts,
+        label: newLabel.label,
+        durationMillis: newLabel.durationMillis,
+        id: Math.random().toString(),
+      }).sort((a, b) => a.timestamp - b.timestamp)
+    }
+  });
 };
 
-const editLabel = (match: Match, video: MatchVideo) => (setMatchVideo: (m: Match) => void) => (labelId: string, newLabel: MatchEvent) => {
-  const vidId = match.videos.findIndex(v => v.id === video.id);
-  const eId = match.videos[vidId].events.findIndex(e => e.id === labelId);
-  const events = match.videos[vidId].events;
+const editLabel = (match: Match, video: MatchVideo) => (labelId: string, newLabel: MatchEvent) => {
+  return updateVideo(match, video, v => {
+    const { events } = v;
+    const eId = events.findIndex(e => e.id === labelId);
 
-  events[eId] = newLabel;
-
-  match.videos[vidId] = { ...video, events };
-  setMatchVideo(match);
+    events[eId] = newLabel;
+    return { ...video, events };
+  });
 };
 
-const deleteLabel = (match: Match, video: MatchVideo) => (setMatchVideo: (m: Match) => void) => (labelId: string) => {
-  const vidId = match.videos.findIndex(v => v.id === video.id);
-  const events = match.videos[vidId].events.filter(e => e.id !== labelId);
-
-  match.videos[vidId] = { ...video, events };
-  setMatchVideo(match);
+const deleteLabel = (match: Match, video: MatchVideo) => (labelId: string) => {
+  return updateVideo(match, video, v => {
+    const events = v.events.filter(e => e.id !== labelId);
+    return { ...video, events };
+  });
 };
 
-const addMatchVideo = (match: Match, setMatchVideo: (m: Match) => void) => (video: MatchVideo) => {
-  match.videos.push(video);
-  setMatchVideo(match);
+const addMatchVideo = (match: Match) => (video: MatchVideo) => {
+  return {
+    ...match,
+    videos: [...match.videos, video],
+  };
 };
 
-const updateVideoStartTime = (match: Match, oldVideo: MatchVideo, setMatchVideo: (m: Match) => void) => (newStart: number) => {
+const updateVideo = (match: Match, oldVideo: MatchVideo, updater: (v: MatchVideo) => MatchVideo): Match => {
   const updateIndex = match.videos.findIndex(v => v.id === oldVideo.id);
-  match.videos[updateIndex] = {
+  const videos = match.videos;
+  videos[updateIndex] = updater(oldVideo);
+  return {
+    ...match,
+    videos,
+  };
+};
+
+const updateVideoStartTime = (match: Match, oldVideo: MatchVideo) => (newStart: number): Match => {
+  return updateVideo(match, oldVideo, v => ({
     ...oldVideo,
     start: newStart,
+  }));
+};
+
+const deleteVideo = (match: Match) => (videoId: string): Match => {
+  return {
+    ...match,
+    videos: match.videos.filter(n => n.id !== videoId),
   };
-  setMatchVideo(match);
 };
 
 const styles = StyleSheet.create({
