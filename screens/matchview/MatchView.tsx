@@ -13,10 +13,11 @@ const ITEM_HEIGHTT = 700;
 
 type Props = Match & {
   onDelete: () => void,
-  goBack: () => void
+  goBack: () => void,
+  onChange: (m: Match) => void,
 };
 
-export function MatchView({ onDelete, goBack, ...defaultData }: Props) {
+export function MatchView({ onChange, onDelete, goBack, ...defaultData }: Props) {
   const flatListRef = React.useRef(null);
   const timer = React.useRef<NodeJS.Timer | null | undefined>();
   const [match, setMatchVideo] = React.useState<Match>({...defaultData, videos: defaultData.videos.sort((a, b) => a.start - b.start) });
@@ -62,7 +63,7 @@ export function MatchView({ onDelete, goBack, ...defaultData }: Props) {
     return (
       <ImportVideoView
         doSelect={video => {
-          R.pipe(addMatchVideo(match), setMatchVideo)(video);
+          R.pipe(addMatchVideo(match), doSetMatchVideo(onChange, setMatchVideo))(video);
           setShowImportView(false);
         }}
         goBack={() => setShowImportView(false)}
@@ -91,16 +92,17 @@ export function MatchView({ onDelete, goBack, ...defaultData }: Props) {
         extraData={`${isPlaying} ${selectedItemIndex} ${timestamp}`}
         renderItem={({ item, index }) => (
           <MatchVideoView
+            onChange={R.pipe(video => updateVideo(match, video, v => v), doSetMatchVideo(onChange, setMatchVideo))}
             handlePause={() => setIsPlaying(false)}
-            addLabel={R.pipe(addLabelToVideo(match, item), setMatchVideo)}
+            addLabel={R.pipe(addLabelToVideo(match, item), doSetMatchVideo(onChange, setMatchVideo))}
             timestampOverride={timestamp}
             key={item.id}
             shouldPlay={isPlaying}
             selected={index === selectedItemIndex}
-            editLabel={R.pipe(editLabel(match, item), setMatchVideo)}
-            deleteLabel={R.pipe(deleteLabel(match, item), setMatchVideo)}
-            updateStartTime={R.pipe(updateVideoStartTime(match, item), setMatchVideo)}
-            deleteVideo={R.pipe(deleteVideo(match), setMatchVideo)}
+            editLabel={R.pipe(editLabel(match, item), doSetMatchVideo(onChange, setMatchVideo))}
+            deleteLabel={R.pipe(deleteLabel(match, item), doSetMatchVideo(onChange, setMatchVideo))}
+            updateStartTime={R.pipe(updateVideoStartTime(match, item), doSetMatchVideo(onChange, setMatchVideo))}
+            deleteVideo={R.pipe(deleteVideo(match), doSetMatchVideo(onChange, setMatchVideo))}
             {...item}
           />
         )}
@@ -201,6 +203,11 @@ const deleteVideo = (match: Match) => (videoId: string): Match => {
     ...match,
     videos: match.videos.filter(n => n.id !== videoId),
   };
+};
+
+const doSetMatchVideo = (onChange: (m: Match) => void, setMatchVideo: (m: Match) => void) => (m: Match) => {
+  onChange(m);
+  setMatchVideo(m);
 };
 
 const styles = StyleSheet.create({

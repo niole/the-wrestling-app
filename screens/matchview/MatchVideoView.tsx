@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as R from 'ramda';
 import { Modal, TextInput, Text, View, StyleSheet, Button } from 'react-native';
 import { formatDate } from '../../utils';
 import { Video, AVPlaybackStatus } from 'expo-av';
@@ -41,9 +42,15 @@ const {
   const [newLabel, setNewLabel] = React.useState<string>('');
   const [newDuration, setNewDuration] = React.useState<number>(durationMillis);
   const video = React.useRef(null);
-  const [status, setStatus] = React.useState({ positionMillis: 0 });
+  const [status, setStatus] = React.useState({ positionMillis: 0, isPlaying: false });
   const [timestamp, setTimestamp] = React.useState<number>(timestampOverride !== undefined && selected ? timestampOverride : status.positionMillis + start)
   const [showLabelModal, setShowLabelModal] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (!R.isNil(video.current)) {
+      video.current.loadAsync({ uri });
+    }
+  }, [video.current]);
 
   React.useEffect(() => {
     setTimestamp(timestampOverride);
@@ -53,6 +60,7 @@ const {
     if (video.current !== null && video.current !== undefined) {
       if (selected && shouldPlay) {
         video.current.playAsync();
+        video.current.replayAsync();
       } else {
         video.current.pauseAsync();
       }
@@ -84,7 +92,7 @@ const {
           <Button title="Delete Video" onPress={() => deleteVideo(id)} />
           <DateTimePicker
             defaultDate={new Date(start)}
-            onChange={(newStart: Date) => updateStartTime(newStart.getTime())}
+            onChange={R.pipe(s => s.getTime(), updateStartTime)}
           />
         </View>
         <View style={styles.labelContainer}>
@@ -142,7 +150,6 @@ const {
         source={{ uri }}
         resizeMode="contain"
         onPlaybackStatusUpdate={status => {
-
           setTimestamp(ts => {
             if (Math.abs(ts - (status.positionMillis + start)) >= 400) {
               return status.positionMillis + start;

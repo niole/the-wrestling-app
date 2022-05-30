@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as R from 'ramda';
-import { KeyboardAvoidingView, TextInput, Modal, Button, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, KeyboardAvoidingView, TextInput, Modal, Button, Pressable, StyleSheet, Text, View } from 'react-native';
 import { DateTimePicker } from '../components/DateTimePicker';
 import SelectDropdown from 'react-native-select-dropdown';
 
@@ -52,12 +52,12 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
         <MatchView
           onDelete={() => R.pipe(deleteMatch(matches), setMatches)(selectedMatch)}
           goBack={() => setSelectedMatch(undefined)}
+          onChange={R.pipe(updateMatch(matches), setMatches)}
           {...selectedMatch}
         />
       </KeyboardAvoidingView>
     );
   }
-
   const resetModalState = () => {
     setCreateNewMatch(false);
     setNewMatchTitle(undefined);
@@ -112,6 +112,15 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
 const deleteMatch = (matches: Match[]) => (selectedMatch: Match): Match[] => {
   return matches.filter(m => m.id !== selectedMatch.id);
+};
+
+const updateMatch = (matches: Match[]) => (newMatch: Match): Match[] => {
+  return matches.map(m => {
+    if (m.id === newMatch.id) {
+      return newMatch;
+    }
+    return m;
+  });
 };
 
 const styles = StyleSheet.create({
