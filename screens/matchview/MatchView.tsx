@@ -54,8 +54,7 @@ export function MatchView({ onDelete, goBack, ...defaultData }: Props) {
   }, [selectedItemIndex]);
 
   React.useEffect(() => {
-    console.log(timestamp, match.videos);
-    const selectedItemIndex = match.videos.findIndex(v => timestamp >= v.start && timestamp <= v.start + v.durationMillis) || 0;
+    const selectedItemIndex = R.findIndex((v: MatchVideo) => timestamp >= v.start && timestamp <= v.start + v.durationMillis)(match.videos) || 0;
     setSelectedItemIndex(selectedItemIndex);
   }, [timestamp, match]);
 
@@ -73,10 +72,12 @@ export function MatchView({ onDelete, goBack, ...defaultData }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.matchTitleContainer}>
-        <ClickableText onPress={goBack}>
-          Back
-        </ClickableText>
-        <Button title="Delete Match" onPress={R.pipe(onDelete, goBack)} />
+        <View style={{ justifyContent: 'space-between', flexDirection: 'row'}}>
+          <ClickableText onPress={goBack}>
+            Back
+          </ClickableText>
+          <Button title="Delete Match" onPress={R.pipe(onDelete, goBack)} />
+        </View>
         <Text style={styles.matchTitle}>{match.title}</Text>
         <Text style={styles.matchTitle}>{formatDate(match.start)}</Text>
         <Text style={styles.matchTitle}>-</Text>
@@ -157,7 +158,7 @@ const addLabelToVideo = (match: Match, video: MatchVideo) => (newLabel: NewLabel
 const editLabel = (match: Match, video: MatchVideo) => (labelId: string, newLabel: MatchEvent) => {
   return updateVideo(match, video, v => {
     const { events } = v;
-    const eId = events.findIndex(e => e.id === labelId);
+    const eId = R.findIndex((e: MatchEvent) => e.id === labelId)(events);
 
     events[eId] = newLabel;
     return { ...video, events };
@@ -179,7 +180,7 @@ const addMatchVideo = (match: Match) => (video: MatchVideo) => {
 };
 
 const updateVideo = (match: Match, oldVideo: MatchVideo, updater: (v: MatchVideo) => MatchVideo): Match => {
-  const updateIndex = match.videos.findIndex(v => v.id === oldVideo.id);
+  const updateIndex = R.findIndex((v: MatchVideo) => v.id === oldVideo.id)(match.videos);
   const videos = match.videos;
   videos[updateIndex] = updater(oldVideo);
   return {

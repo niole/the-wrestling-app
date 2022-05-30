@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as R from 'ramda';
-import { TextInput, Modal, Button, Pressable, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, TextInput, Modal, Button, Pressable, StyleSheet, Text, View } from 'react-native';
 import { DateTimePicker } from '../components/DateTimePicker';
 import SelectDropdown from 'react-native-select-dropdown';
 
@@ -48,11 +48,13 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
   if (selectedMatch) {
     return (
-      <MatchView
-        onDelete={() => R.pipe(deleteMatch(matches), setMatches)(selectedMatch)}
-        goBack={() => setSelectedMatch(undefined)}
-        {...selectedMatch}
-      />
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <MatchView
+          onDelete={() => R.pipe(deleteMatch(matches), setMatches)(selectedMatch)}
+          goBack={() => setSelectedMatch(undefined)}
+          {...selectedMatch}
+        />
+      </KeyboardAvoidingView>
     );
   }
 
