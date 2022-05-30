@@ -70,7 +70,7 @@ export function DateTimePicker({ onChange, defaultDate }: Props) {
                     setDate(new Date(date));
                   }
             }}>
-            {Array(24).fill(1).map((n, i) => <Picker.Item key={(n+i).toString()} label={(n+i).toString()} value={n+i} />)}
+            {Array(24).fill(0).map((n, i) => <Picker.Item key={(n+i).toString()} label={(n+i).toString()} value={n+i} />)}
           </Picker>
           <Text style={styles.colons}>:</Text>
           <Picker
@@ -83,7 +83,7 @@ export function DateTimePicker({ onChange, defaultDate }: Props) {
                     setDate(new Date(date));
                   }
             }}>
-            {Array(59).fill(1).map((n, i) => <Picker.Item key={(n+i).toString()} label={(n+i).toString()} value={n+i} />)}
+            {Array(60).fill(0).map((n, i) => <Picker.Item key={(n+i).toString()} label={(n+i).toString()} value={n+i} />)}
           </Picker>
           <Text style={styles.colons}>:</Text>
           <Picker
@@ -96,7 +96,7 @@ export function DateTimePicker({ onChange, defaultDate }: Props) {
                     setDate(new Date(date));
                   }
             }}>
-            {Array(59).fill(1).map((n, i) => <Picker.Item key={(n+i).toString()} label={(n+i).toString()} value={n+i} />)}
+            {Array(60).fill(0).map((n, i) => <Picker.Item key={(n+i).toString()} label={(n+i).toString()} value={n+i} />)}
           </Picker>
       </View>
       </View>
